@@ -11,8 +11,11 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.user.UserUpdateBuilder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,6 +36,9 @@ class AuthRepositoryImpl @Inject constructor(
             client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
+                data = buildJsonObject {
+                    put("name", name)
+                }
             }
         }.fold(
             onSuccess = { Resource.Success(Unit) },
@@ -111,11 +117,25 @@ class AuthRepositoryImpl @Inject constructor(
             UserProfile(
                 id = user.id,
                 email = user.email.orEmpty(),
-                name = user.userMetadata?.get("name")?.toString()
+                name = user.userMetadata?.get("name")?.toString()?.removeSurrounding("\"")
             )
         }.fold(
             onSuccess = { Resource.Success(it) },
             onFailure = { Resource.Error(it.message ?: "Failed to fetch profile", it) }
+        )
+    }
+
+    override suspend fun updateProfile(name: String): Resource<Unit> {
+        if (name.isBlank()) return Resource.Error("Name cannot be empty")
+        return runCatching {
+            client.auth.updateUser {
+                data = buildJsonObject {
+                    put("name", name)
+                }
+            }
+        }.fold(
+            onSuccess = { Resource.Success(Unit) },
+            onFailure = { Resource.Error(it.message ?: "Failed to update profile", it) }
         )
     }
 }

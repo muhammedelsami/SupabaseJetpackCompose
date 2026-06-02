@@ -13,6 +13,7 @@ data class NotesUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
+    val successMessage: String? = null,
     val error: String? = null
 )
 

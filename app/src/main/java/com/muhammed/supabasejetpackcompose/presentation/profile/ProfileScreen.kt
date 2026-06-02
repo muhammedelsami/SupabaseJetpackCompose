@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -24,6 +26,7 @@ import com.muhammed.supabasejetpackcompose.ui.theme.*
 fun ProfileScreen(
     padding: PaddingValues,
     state: ProfileUiState,
+    onEvent: (ProfileEvent) -> Unit,
     onLogout: () -> Unit,
     onDeleteAccount: () -> Unit
 ) {
@@ -89,11 +92,39 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            Text(
-                text = state.profile?.name ?: "User",
-                style = MaterialTheme.typography.headlineMedium,
-                color = TextPrimary
-            )
+            if (state.isEditing) {
+                OutlinedTextField(
+                    value = state.nameInput,
+                    onValueChange = { onEvent(ProfileEvent.NameChanged(it)) },
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(onClick = { onEvent(ProfileEvent.SaveProfile) }) {
+                            Icon(Icons.Default.Check, contentDescription = "Save", tint = PrimaryLight)
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryMain,
+                        unfocusedBorderColor = SurfaceLighter,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        focusedLabelColor = PrimaryMain,
+                        unfocusedLabelColor = TextMuted
+                    )
+                )
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = state.profile?.name ?: "User",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = TextPrimary
+                    )
+                    IconButton(onClick = { onEvent(ProfileEvent.ToggleEdit) }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = PrimaryLight, modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+
             Text(
                 text = state.profile?.email.orEmpty(),
                 style = MaterialTheme.typography.bodyLarge,
@@ -103,7 +134,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(48.dp))
             
             // Info Sections
-            ProfileInfoItem(label = "User ID", value = state.profile?.id.orEmpty().take(12) + "...")
+            ProfileInfoItem(label = "User ID", value = state.profile?.id.orEmpty())
             
             Spacer(modifier = Modifier.height(32.dp))
             

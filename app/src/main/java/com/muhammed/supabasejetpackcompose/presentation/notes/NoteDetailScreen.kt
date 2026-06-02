@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -174,4 +175,24 @@ fun NoteDetailScreen(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun NoteDetailScreenPreview() {
+    NoteDetailScreen(
+        note = Note(
+            id = "1",
+            userId = "123",
+            title = "Sample Note Title",
+            content = "This is a sample note content to demonstrate the Note Detail Screen in Jetpack Compose. It can be quite long to show how the scrolling works.",
+            imageUrl = "8a6c0395-a681-472e-ae84-e9cefdeedf13/74fca2e6-e8c9-4454-ab6e-729d2a194c91/image.jpg",
+            createdAt = "2024-06-01T12:00:00Z",
+            updatedAt = "2024-06-02T15:30:00Z"
+        ),
+        onEdit = {},
+        onDelete = {},
+        onBack = {},
+        onResolveImageUrl = { it }
+    )
 }

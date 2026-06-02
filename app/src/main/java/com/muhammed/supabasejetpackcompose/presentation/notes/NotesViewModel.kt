@@ -1,5 +1,6 @@
 package com.muhammed.supabasejetpackcompose.presentation.notes
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.muhammed.supabasejetpackcompose.domain.repository.AuthRepository
@@ -49,14 +50,15 @@ class NotesViewModel @Inject constructor(
                 it.copy(
                     selectedNote = event.note,
                     titleInput = event.note.title,
-                    contentInput = event.note.content
+                    contentInput = event.note.content,
+                    imageUri = event.note.imageUrl?.let { path -> Uri.parse(getImageUrl(path)) }
                 )
             }
             is NotesEvent.DeleteNote -> deleteNote(event.note)
             NotesEvent.AddNote -> addNote()
             NotesEvent.UpdateNote -> updateNote()
             is NotesEvent.PickImage -> _uiState.update { it.copy(imageUri = event.uri) }
-            NotesEvent.ResetSaveState -> _uiState.update { it.copy(isSaved = false, error = null) }
+            NotesEvent.ResetSaveState -> _uiState.update { it.copy(isSaved = false, successMessage = null, error = null) }
         }
     }
 
@@ -76,7 +78,16 @@ class NotesViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true, error = null) }
             when (val result = notesRepository.createNote(note, state.imageUri)) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(isSaving = false, isSaved = true, titleInput = "", contentInput = "", imageUri = null) }
+                    _uiState.update { 
+                        it.copy(
+                            isSaving = false, 
+                            isSaved = true, 
+                            successMessage = "Note added successfully!",
+                            titleInput = "", 
+                            contentInput = "", 
+                            imageUri = null
+                        ) 
+                    }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isSaving = false, error = result.message) }
@@ -87,7 +98,18 @@ class NotesViewModel @Inject constructor(
     }
 
     private fun deleteNote(note: Note) {
-        viewModelScope.launch { notesRepository.deleteNote(note) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            when (val result = notesRepository.deleteNote(note)) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(isSaving = false, successMessage = "Note deleted") }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(isSaving = false, error = result.message) }
+                }
+                Resource.Loading -> Unit
+            }
+        }
     }
 
     private fun updateNote() {
@@ -100,7 +122,17 @@ class NotesViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true, error = null) }
             when (val result = notesRepository.updateNote(updated, _uiState.value.imageUri)) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(isSaving = false, isSaved = true, selectedNote = null, titleInput = "", contentInput = "", imageUri = null) }
+                    _uiState.update { 
+                        it.copy(
+                            isSaving = false, 
+                            isSaved = true, 
+                            successMessage = "Note updated successfully!",
+                            selectedNote = null, 
+                            titleInput = "", 
+                            contentInput = "", 
+                            imageUri = null
+                        ) 
+                    }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isSaving = false, error = result.message) }

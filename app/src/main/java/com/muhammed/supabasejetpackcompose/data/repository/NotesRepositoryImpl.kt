@@ -62,13 +62,30 @@ class NotesRepositoryImpl @Inject constructor(
         return runCatching {
             var imagePath = note.imageUrl
             if (newImageUri != null) {
+                val isRemote = newImageUri.toString().startsWith("http") || newImageUri.scheme?.startsWith("http") == true
+                if (!isRemote) {
+                    imagePath?.let { deleteImageByPath(it) }
+                    imagePath = uploadImageIfNeeded(note.userId, note.id, newImageUri)
+                }
+            } else {
                 imagePath?.let { deleteImageByPath(it) }
-                imagePath = uploadImageIfNeeded(note.userId, note.id, newImageUri)
+                imagePath = null
             }
             val updated = note.copy(imageUrl = imagePath)
-            client.from("notes").update(updated) {
+            
+            // Supabase update typically requires explicit fields or a serializable object
+            // Ensure we are sending the imageUrl as null in the database
+            client.from("notes").update(
+                buildJsonObject {
+                    put("title", updated.title)
+                    put("content", updated.content)
+                    put("image_url", updated.imageUrl)
+                    put("updated_at", updated.updatedAt)
+                }
+            ) {
                 filter { eq("id", note.id) }
             }
+
             notes.update { list -> list.map { if (it.id == note.id) updated else it } }
         }.fold(
             onSuccess = { Resource.Success(Unit) },

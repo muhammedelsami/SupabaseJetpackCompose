@@ -13,4 +13,5 @@ interface AuthRepository {
     suspend fun logout(): Resource<Unit>
     suspend fun deleteAccount(): Resource<Unit>
     suspend fun getProfile(): Resource<UserProfile>
+    suspend fun updateProfile(name: String): Resource<Unit>
 }

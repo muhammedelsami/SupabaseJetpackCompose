@@ -73,6 +73,7 @@ fun MainBottomNav(
             else -> ProfileScreen(
                 padding = padding,
                 state = profileVm.uiState.collectAsStateWithLifecycle().value,
+                onEvent = profileVm::onEvent,
                 onLogout = {
                     profileVm.logout()
                     onLogout()

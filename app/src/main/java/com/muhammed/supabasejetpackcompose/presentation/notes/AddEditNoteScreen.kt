@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.muhammed.supabasejetpackcompose.ui.theme.*
@@ -54,21 +55,24 @@ fun AddEditNoteScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                actions = {
-                    IconButton(onClick = onSave, enabled = title.isNotBlank()) {
-                        Icon(
-                            imageVector = Icons.Default.Done,
-                            contentDescription = "Save",
-                            tint = if (title.isNotBlank()) PrimaryLight else TextMuted
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BackgroundDark,
                     titleContentColor = TextPrimary,
                     navigationIconContentColor = TextPrimary
                 )
             )
+        },
+        floatingActionButton = {
+            if (title.isNotBlank()) {
+                FloatingActionButton(
+                    onClick = onSave,
+                    containerColor = PrimaryLight,
+                    contentColor = TextPrimary,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(Icons.Default.Done, contentDescription = "Save")
+                }
+            }
         },
         containerColor = BackgroundDark
     ) { padding ->
@@ -127,12 +131,12 @@ fun AddEditNoteScreen(
                 TextField(
                     value = title,
                     onValueChange = onTitleChanged,
-                    placeholder = { 
+                    placeholder = {
                         Text(
-                            "Title", 
-                            style = MaterialTheme.typography.displayLarge, 
-                            color = TextMuted 
-                        ) 
+                            "Title",
+                            style = MaterialTheme.typography.displayLarge,
+                            color = TextMuted
+                        )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.typography.displayLarge.copy(color = TextPrimary),
@@ -151,12 +155,12 @@ fun AddEditNoteScreen(
                 TextField(
                     value = content,
                     onValueChange = onContentChanged,
-                    placeholder = { 
+                    placeholder = {
                         Text(
-                            "Write your note here...", 
-                            style = MaterialTheme.typography.bodyLarge, 
-                            color = TextMuted 
-                        ) 
+                            "Write your note here...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextMuted
+                        )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextSecondary),
@@ -171,5 +175,41 @@ fun AddEditNoteScreen(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddEditNoteScreenPreview() {
+    SupabaseJetpackComposeTheme {
+        AddEditNoteScreen(
+            title = "My Note",
+            content = "This is a sample note content",
+            imageUri = null,
+            isEdit = false,
+            onTitleChanged = {},
+            onContentChanged = {},
+            onImagePicked = {},
+            onSave = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddEditNoteScreenEditPreview() {
+    SupabaseJetpackComposeTheme {
+        AddEditNoteScreen(
+            title = "Existing Note",
+            content = "This is a note that is being edited with some longer content to see how it looks in the editor.",
+            imageUri = Uri.parse("https://placehold.net/800x600.png"),
+            isEdit = true,
+            onTitleChanged = {},
+            onContentChanged = {},
+            onImagePicked = {},
+            onSave = {},
+            onBack = {}
+        )
     }
 }
